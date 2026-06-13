@@ -90,17 +90,17 @@ export const MATERIALS = {
 // 5. Clés du DashboardStatsDTO  (documentation — usage dans les services)
 // ---------------------------------------------------------------------------
 export const DASHBOARD_KEYS = {
-  totalProducts:            'totalProducts',
-  productsEnReception:      'productsEnReception',
+  totalProducts: 'totalProducts',
+  productsEnReception: 'productsEnReception',
   productsEnTransformation: 'productsEnTransformation',
-  productsEnPurification:   'productsEnPurification',
-  productsEnCours:          'productsEnCours',
-  productsTermines:         'productsTermines',
-  productsAnnules:          'productsAnnules',
-  totalSteps:               'totalSteps',
+  productsEnPurification: 'productsEnPurification',
+  productsEnCours: 'productsEnCours',
+  productsTermines: 'productsTermines',
+  productsAnnules: 'productsAnnules',
+  totalSteps: 'totalSteps',
 };
 
 // ---------------------------------------------------------------------------
 // 6. API base URL
 // ---------------------------------------------------------------------------
-export const API_BASE_URL = '/api';
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://mvptracabilite-backend-production.up.railway.app/api';
