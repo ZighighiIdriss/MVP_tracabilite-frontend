@@ -11,6 +11,7 @@ const Login = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false); // Ajout état
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -54,19 +55,16 @@ const Login = () => {
 
   return (
     <div className="login-page">
-      {/* Décoration de fond */}
       <div className="login-bg-orb login-bg-orb--1" />
       <div className="login-bg-orb login-bg-orb--2" />
 
       <div className="login-card card animate-fade-in-up">
-        {/* Logo / Titre */}
         <div className="login-brand">
           <span className="login-brand__icon">🌿</span>
           <h1 className="login-title">SUSTAINABLE PHARMA</h1>
           <p className="login-subtitle">Système de suivi et traçabilité industrielle</p>
         </div>
 
-        {/* Message d'erreur */}
         {error && (
           <div className="login-error animate-fade-in" role="alert">
             <span className="login-error__icon">⚠️</span>
@@ -74,7 +72,6 @@ const Login = () => {
           </div>
         )}
 
-        {/* Formulaire */}
         <form className="login-fields" onSubmit={handleLogin}>
           <div className="login-field">
             <label htmlFor="login-email" className="login-label">Email</label>
@@ -89,18 +86,39 @@ const Login = () => {
               autoComplete="email"
             />
           </div>
+
           <div className="login-field">
             <label htmlFor="login-password" className="login-label">Mot de passe</label>
-            <input
-              id="login-password"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="login-input"
-              disabled={loading}
-              autoComplete="current-password"
-            />
+            {/* Conteneur relatif pour positionner l'icône */}
+            <div style={{ position: 'relative' }}>
+              <input
+                id="login-password"
+                type={showPassword ? "text" : "password"} // Bascule le type
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="login-input"
+                disabled={loading}
+                autoComplete="current-password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{
+                  position: 'absolute',
+                  right: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '1.2rem',
+                  padding: 0
+                }}
+              >
+                {showPassword ? "Masquer" : "Voir"}
+              </button>
+            </div>
           </div>
 
           <button
@@ -120,12 +138,10 @@ const Login = () => {
           </button>
         </form>
 
-        {/* Séparateur */}
         <div className="login-divider">
           <span>ou accès rapide</span>
         </div>
 
-        {/* Bouton Démo — grand et visible */}
         <button
           id="btn-demo"
           className="btn-demo"
