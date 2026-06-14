@@ -5,7 +5,7 @@
 // =============================================================================
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getProductById, addStep, updateProduct, deleteStep } from '../services/api';
+import { getProductById, addStep, updateProduct, deleteStep, deleteProduct } from '../services/api';
 import { PRODUCT_TYPES, MATERIALS } from '../config/constants';
 import Loader from '../components/ui/Loader';
 import Badge from '../components/ui/Badge';
@@ -149,6 +149,16 @@ const ProductDetail = () => {
     }
   };
 
+  const handleCancelProduct = async () => {
+    if (!window.confirm("⚠️ Êtes-vous sûr de vouloir annuler ce lot ? Cette action sera tracée.")) return;
+    try {
+      await deleteProduct(id);
+      navigate('/dashboard');
+    } catch (err) {
+      alert("Erreur lors de l'annulation.");
+    }
+  };
+
   // ══════════════════════════════════════════════════════════════════════
   // RENDU
   // ══════════════════════════════════════════════════════════════════════
@@ -224,6 +234,31 @@ const ProductDetail = () => {
             <span className="product-detail__info-value">{sortedSteps.length}</span>
           </div>
         </div>
+
+        {/* =========================================
+            BOUTONS D'ACTION (MODIFIER / ANNULER)
+            ========================================= */}
+        <div style={{
+          display: 'flex', gap: 'var(--space-4)', marginTop: 'var(--space-6)',
+          paddingTop: 'var(--space-4)', borderTop: '1px solid var(--color-neutral-100)',
+          justifyContent: 'flex-end', width: '100%'
+        }}>
+          <button
+            onClick={() => navigate(`/products/${product.id}/edit`)}
+            className="btn-back"
+            style={{ color: 'var(--color-emerald-600)', borderColor: 'var(--color-emerald-200)', background: 'var(--color-emerald-50)' }}
+          >
+            ✏️ Modifier le lot
+          </button>
+          <button
+            onClick={handleCancelProduct}
+            className="btn-back"
+            style={{ color: '#b91c1c', borderColor: '#f87171', background: '#fef2f2' }}
+          >
+            🚫 Annuler le lot
+          </button>
+        </div>
+
       </section>
 
       {/* ══════════════════════════════════════════════════════════════════

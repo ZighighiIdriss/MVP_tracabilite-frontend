@@ -5,7 +5,7 @@
 // =============================================================================
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getDashboardStats, getAllProducts } from '../services/api';
+import { getDashboardStats, getAllProducts, deleteProduct } from '../services/api';
 import { PRODUCT_STATUSES, PRODUCT_TYPES } from '../config/constants';
 import Loader from '../components/ui/Loader';
 import EmptyState from '../components/ui/EmptyState';
@@ -100,6 +100,18 @@ const Dashboard = () => {
   const availableStatuses = Array.from(
     new Set([...MANDATORY_STEPS, ...dynamicStatuses])
   ).filter((status) => status.toUpperCase() !== 'ANNULE' && status.toUpperCase() !== 'ANNULÉ');
+
+  const handleCancel = async (id) => {
+    if (!window.confirm("⚠️ Êtes-vous sûr de vouloir annuler ce lot ?")) return;
+    try {
+      await deleteProduct(id);
+      // Rafraîchir la liste discrètement
+      const productsData = await getAllProducts();
+      setProducts(Array.isArray(productsData) ? productsData : []);
+    } catch (err) {
+      alert("Erreur lors de l'annulation : " + err.message);
+    }
+  };
 
   // ── État : Chargement ──────────────────────────────────────────────────
   if (isLoading) {
@@ -259,122 +271,134 @@ const Dashboard = () => {
 
           return (
             <>
-          <div style={{ overflowX: 'auto', borderRadius: 'var(--radius-xl)' }}>
-            <table style={tableStyles.table}>
-              <thead>
-                <tr>
-                  {['Code Produit', 'Type', 'Quantité', 'Date', 'Statut', 'Action'].map((col) => (
-                    <th key={col} style={tableStyles.th}>
-                      {col}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {displayedProducts.map((product, index) => {
-                  const statusName = resolveStatusName(product.currentStatus);
-                  const statusConfig = PRODUCT_STATUSES[statusName];
+              <div style={{ overflowX: 'auto', borderRadius: 'var(--radius-xl)' }}>
+                <table style={tableStyles.table}>
+                  <thead>
+                    <tr>
+                      {['Code Produit', 'Type', 'Quantité', 'Date', 'Statut', 'Action'].map((col) => (
+                        <th key={col} style={tableStyles.th}>
+                          {col}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {displayedProducts.map((product, index) => {
+                      const statusName = resolveStatusName(product.currentStatus);
+                      const statusConfig = PRODUCT_STATUSES[statusName];
 
-                  return (
-                    <tr
-                      key={product.id}
-                      style={{
-                        ...tableStyles.tr,
-                        animationDelay: `${index * 30}ms`,
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = 'var(--color-neutral-50)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = 'transparent';
-                      }}
-                    >
-                      {/* Code Produit */}
-                      <td style={tableStyles.td}>
-                        <span style={tableStyles.productCode}>
-                          {product.productCode || '—'}
-                        </span>
-                      </td>
-
-                      {/* Type */}
-                      <td style={tableStyles.td}>
-                        <span style={tableStyles.typeBadge}>
-                          {resolveTypeLabel(product.type)}
-                        </span>
-                      </td>
-
-                      {/* Quantité */}
-                      <td style={tableStyles.td}>
-                        {product.quantity != null ? `${product.quantity} kg` : '—'}
-                      </td>
-
-                      {/* Date */}
-                      <td style={tableStyles.td}>
-                        <span style={{ color: 'var(--color-neutral-500)' }}>
-                          {formatDate(product.collectionDate)}
-                        </span>
-                      </td>
-
-                      {/* Statut */}
-                      <td style={tableStyles.td}>
-                        <StatusBadge statusName={statusName} config={statusConfig} />
-                      </td>
-
-                      {/* Action */}
-                      <td style={tableStyles.td}>
-                        <button
-                          onClick={() => navigate(`/products/${product.id}`)}
-                          style={tableStyles.actionLink}
+                      return (
+                        <tr
+                          key={product.id}
+                          style={{
+                            ...tableStyles.tr,
+                            animationDelay: `${index * 30}ms`,
+                          }}
                           onMouseEnter={(e) => {
-                            e.currentTarget.style.color = 'var(--color-emerald-500)';
+                            e.currentTarget.style.background = 'var(--color-neutral-50)';
                           }}
                           onMouseLeave={(e) => {
-                            e.currentTarget.style.color = 'var(--color-emerald-600)';
+                            e.currentTarget.style.background = 'transparent';
                           }}
                         >
-                          Consulter &gt;
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                          {/* Code Produit */}
+                          <td style={tableStyles.td}>
+                            <span style={tableStyles.productCode}>
+                              {product.productCode || '—'}
+                            </span>
+                          </td>
 
-          {/* Bouton Voir plus / Voir moins */}
-          {sortedProducts.length > INITIAL_LIMIT && (
-            <div style={{ textAlign: 'center', marginTop: 'var(--space-4)' }}>
-              <button
-                onClick={() => setIsExpanded((prev) => !prev)}
-                style={{
-                  background: 'none',
-                  border: '1px solid var(--color-neutral-200)',
-                  borderRadius: 'var(--radius-md)',
-                  padding: 'var(--space-2) var(--space-6)',
-                  fontSize: 'var(--font-size-sm)',
-                  fontWeight: 600,
-                  fontFamily: 'var(--font-family)',
-                  color: 'var(--color-neutral-600)',
-                  cursor: 'pointer',
-                  transition: 'all var(--transition-fast)',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'var(--color-neutral-50)';
-                  e.currentTarget.style.borderColor = 'var(--color-neutral-300)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'none';
-                  e.currentTarget.style.borderColor = 'var(--color-neutral-200)';
-                }}
-              >
-                {isExpanded
-                  ? 'Voir moins'
-                  : `Voir tout (${sortedProducts.length} produits)`
-                }
-              </button>
-            </div>
-          )}
+                          {/* Type */}
+                          <td style={tableStyles.td}>
+                            <span style={tableStyles.typeBadge}>
+                              {resolveTypeLabel(product.type)}
+                            </span>
+                          </td>
+
+                          {/* Quantité */}
+                          <td style={tableStyles.td}>
+                            {product.quantity != null ? `${product.quantity} kg` : '—'}
+                          </td>
+
+                          {/* Date */}
+                          <td style={tableStyles.td}>
+                            <span style={{ color: 'var(--color-neutral-500)' }}>
+                              {formatDate(product.collectionDate)}
+                            </span>
+                          </td>
+
+                          {/* Statut */}
+                          <td style={tableStyles.td}>
+                            <StatusBadge statusName={statusName} config={statusConfig} />
+                          </td>
+
+                          {/* Action */}
+                          <td style={{ ...tableStyles.td, display: 'flex', gap: '12px', alignItems: 'center' }}>
+                            <button
+                              onClick={() => navigate(`/products/${product.id}`)}
+                              style={tableStyles.actionLink}
+                              onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--color-emerald-500)'; }}
+                              onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--color-emerald-600)'; }}
+                            >
+                              Consulter &gt;
+                            </button>
+
+                            <button
+                              onClick={() => navigate(`/products/${product.id}/edit`)}
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', padding: '0 4px' }}
+                              title="Modifier"
+                            >
+                              ✏️
+                            </button>
+
+                            <button
+                              onClick={() => handleCancel(product.id)}
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', padding: '0 4px' }}
+                              title="Annuler le lot"
+                            >
+                              🚫
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Bouton Voir plus / Voir moins */}
+              {sortedProducts.length > INITIAL_LIMIT && (
+                <div style={{ textAlign: 'center', marginTop: 'var(--space-4)' }}>
+                  <button
+                    onClick={() => setIsExpanded((prev) => !prev)}
+                    style={{
+                      background: 'none',
+                      border: '1px solid var(--color-neutral-200)',
+                      borderRadius: 'var(--radius-md)',
+                      padding: 'var(--space-2) var(--space-6)',
+                      fontSize: 'var(--font-size-sm)',
+                      fontWeight: 600,
+                      fontFamily: 'var(--font-family)',
+                      color: 'var(--color-neutral-600)',
+                      cursor: 'pointer',
+                      transition: 'all var(--transition-fast)',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'var(--color-neutral-50)';
+                      e.currentTarget.style.borderColor = 'var(--color-neutral-300)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'none';
+                      e.currentTarget.style.borderColor = 'var(--color-neutral-200)';
+                    }}
+                  >
+                    {isExpanded
+                      ? 'Voir moins'
+                      : `Voir tout (${sortedProducts.length} produits)`
+                    }
+                  </button>
+                </div>
+              )}
             </>
           );
         })()}
@@ -391,11 +415,11 @@ function StatusBadge({ statusName, config }) {
   }
 
   const STEP_COLORS = {
-    RECEPTION_MATIERE:       "#4b5563",
-    TRANSFORMATION:          "#d97706",
+    RECEPTION_MATIERE: "#4b5563",
+    TRANSFORMATION: "#d97706",
     PURIFICATION_EXTRACTION: "#7c3aed",
-    CONDITIONNEMENT:         "#0284c7",
-    TERMINE:                 "#16a34a",
+    CONDITIONNEMENT: "#0284c7",
+    TERMINE: "#16a34a",
   };
 
   const hex = STEP_COLORS[statusName] || config?.hex || '#a8a49c';

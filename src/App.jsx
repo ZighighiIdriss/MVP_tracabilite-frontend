@@ -13,6 +13,7 @@ import CreateProduct from './pages/CreateProduct';
 import ProductDetail from './pages/ProductDetail';
 import AddStep from './pages/AddStep';
 import ProductTimelineManager from './pages/ProductTimelineManager';
+import EditProduct from './pages/EditProduct';
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
               <Route path="/products/:id" element={<ProductDetail />} />
               <Route path="/products/:id/timeline" element={<ProductTimelineManager />} />
               <Route path="/products/:id/steps/new" element={<AddStep />} />
+              <Route path="/products/:id/edit" element={<EditProduct />} />
             </Route>
           </Route>
 
