@@ -116,7 +116,7 @@ const Login = () => {
                   padding: 0
                 }}
               >
-                {showPassword ? "Masquer" : "Voir"}
+                {showPassword ? "👁" : "∅"}
               </button>
             </div>
           </div>
